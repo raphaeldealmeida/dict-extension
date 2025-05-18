@@ -1,0 +1,28 @@
+{
+    "manifest_version": 3,
+    "name": "Inline Dictionary & Translator",
+    "version": "1.0",
+    "description": "Shows definitions of selected words and translations of selected phrases.",
+    "permissions": ["activeTab", "scripting"],
+    "action": {
+      "default_icon": {
+        "16": "icon.png"
+      }
+    },
+    "background": {
+      "service_worker": "background.js"
+    },
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["content.js"]
+      }
+    ],
+    "web_accessible_resources": [
+      {
+        "resources": ["dictionary.json"],
+        "matches": ["<all_urls>"]
+      }
+    ]
+  }
+  

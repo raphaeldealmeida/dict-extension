@@ -1,0 +1,18 @@
+{
+    "example": {
+      "definition": "A thing characteristic of its kind or illustrating a general rule.",
+      "part_of_speech": "noun",
+      "example": "This is an example of good practice."
+    },
+    "apple": {
+      "definition": "A round fruit with red or green skin and a whitish interior.",
+      "part_of_speech": "noun",
+      "example": "She ate an apple for lunch."
+    },
+    "run": {
+      "definition": "Move at a speed faster than a walk.",
+      "part_of_speech": "verb",
+      "example": "He can run a mile in five minutes."
+    }
+  }
+  
