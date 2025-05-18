@@ -3,13 +3,26 @@ function removeTooltip() {
     if (oldTooltip) oldTooltip.remove();
 }
 
-function showTooltip(text, x, y, autoDismiss = true) {
+function speakText(text, lang = 'en-US') {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = lang;
+    speechSynthesis.speak(utterance);
+}
+
+function createSpeakerButton() {
+    const button = document.createElement('div');
+    button.innerText = '🔊';
+    button.style.position = 'absolute';
+    button.style.cursor = 'pointer';
+    button.style.fontSize = '16px';
+    return button;
+}
+
+function showTooltip(text, x, y, autoDismiss = true, translation = null) {
     removeTooltip();
 
     const tooltip = document.createElement("div");
     tooltip.id = "dict-trans-tooltip";
-    tooltip.innerText = text;
-
     tooltip.style.position = "absolute";
     tooltip.style.top = `${y + 10}px`;
     tooltip.style.left = `${x + 10}px`;
@@ -23,6 +36,43 @@ function showTooltip(text, x, y, autoDismiss = true) {
     tooltip.style.boxShadow = "0 2px 10px rgba(0,0,0,0.2)";
     tooltip.style.whiteSpace = "pre-wrap";
     tooltip.style.fontFamily = "Arial, sans-serif";
+
+    const contentDiv = document.createElement('div');
+    contentDiv.style.position = 'relative';
+    contentDiv.style.paddingRight = '25px';
+    
+    if (translation) {
+        const originalTextDiv = document.createElement('div');
+        originalTextDiv.textContent = `"${text}"`;
+        
+        const translationDiv = document.createElement('div');
+        translationDiv.style.marginTop = '10px';
+        translationDiv.textContent = `Tradução: ${translation}`;
+
+        const origSpeaker = createSpeakerButton();
+        origSpeaker.style.right = '25px';
+        origSpeaker.style.top = '0';
+        origSpeaker.addEventListener('click', () => speakText(text, 'en-US'));
+
+        const transSpeaker = createSpeakerButton();
+        transSpeaker.style.right = '25px';
+        transSpeaker.style.top = '25px';
+        transSpeaker.addEventListener('click', () => speakText(translation, 'pt-BR'));
+
+        contentDiv.appendChild(originalTextDiv);
+        contentDiv.appendChild(translationDiv);
+        contentDiv.appendChild(origSpeaker);
+        contentDiv.appendChild(transSpeaker);
+    } else {
+        contentDiv.textContent = text;
+        const speaker = createSpeakerButton();
+        speaker.style.right = '25px';
+        speaker.style.top = '0';
+        speaker.addEventListener('click', () => speakText(text, 'en-US'));
+        contentDiv.appendChild(speaker);
+    }
+
+    tooltip.appendChild(contentDiv);
 
     // Botão de fechar
     const closeBtn = document.createElement("div");
@@ -73,8 +123,26 @@ document.addEventListener("mouseup", async (event) => {
             const word = selection.toLowerCase();
             if (dict[word]) {
                 const entry = dict[word];
-                const text = `[${entry.part_of_speech}] ${word}: ${entry.definition}\nExample: ${entry.example}`;
-                showTooltip(text, x, y, true);
+                const titleDiv = document.createElement('div');
+                titleDiv.style.display = 'flex';
+                titleDiv.style.alignItems = 'center';
+                titleDiv.style.gap = '5px';
+                titleDiv.style.marginBottom = '8px';
+                
+                const wordTitle = document.createElement('strong');
+                wordTitle.textContent = word;
+                titleDiv.appendChild(wordTitle);
+
+                const speaker = createSpeakerButton();
+                speaker.style.position = 'relative';
+                speaker.style.right = 'auto';
+                speaker.style.top = 'auto';
+                speaker.addEventListener('click', () => speakText(word, 'en-US'));
+                titleDiv.appendChild(speaker);
+
+                const text = `[${entry.part_of_speech}] ${entry.definition}\nExample: ${entry.example}`;
+                const tooltip = showTooltip(text, x, y, true);
+                tooltip.firstChild.insertBefore(titleDiv, tooltip.firstChild.firstChild);
             } else {
                 showTooltip(`Word "${selection}" not found in dictionary.`, x, y, true);
             }
@@ -83,10 +151,11 @@ document.addEventListener("mouseup", async (event) => {
         }
     } else {
         // Frase → traduzir com MyMemory, sem timeout
-        const tooltip = showTooltip(`"${selection}"\n\nTraduzindo...`, x, y, false);
+        const tooltip = showTooltip(selection, x, y, false);
         const translated = await translateWithMyMemory(selection);
         if (translated) {
-            tooltip.firstChild.nodeValue = `"${selection}"\n\nTradução: ${translated}`;
+            tooltip.remove();
+            showTooltip(selection, x, y, false, translated);
         } else {
             tooltip.firstChild.nodeValue = `"${selection}"\n\nErro na tradução.`;
         }
