@@ -1,14 +1,14 @@
 # Inline Dictionary & Translator Chrome Extension
 
 ## Overview
-The Inline Dictionary & Translator is a Chrome extension that provides instant word definitions and phrase translations directly on any webpage. It combines offline dictionary functionality for single words with online translation capabilities for phrases.
+The Inline Dictionary & Translator is a Chrome extension that provides instant word definitions and phrase translations directly on any webpage. It combines online dictionary functionality for single words with online translation capabilities for phrases.
 
 ## Features
 
 ### 1. Word Definitions
 - Instantly lookup definitions for single English words
 - Shows part of speech, definition, and usage examples
-- Works offline using a built-in dictionary
+- **Uses [dictionaryapi.dev](https://dictionaryapi.dev/) for online definitions**
 - Activated by selecting a word + Ctrl key
 
 ### 2. Phrase Translation
@@ -41,7 +41,7 @@ git clone [repository-url]
 1. **Word Definition**:
    - Select any single word
    - Hold Ctrl key
-   - A tooltip will appear with the definition
+   - A tooltip will appear with the definition (fetched online)
 
 2. **Phrase Translation**:
    - Select any phrase or sentence
@@ -51,7 +51,7 @@ git clone [repository-url]
 ## Technical Requirements
 
 - Google Chrome browser (latest version recommended)
-- Internet connection (for phrase translations only)
+- Internet connection (for both definitions and translations)
 
 ## Architecture
 
@@ -59,7 +59,6 @@ git clone [repository-url]
 - `manifest.json`: Extension configuration and permissions
 - `content.js`: Main functionality and UI implementation
 - `background.js`: Background service worker
-- `dictionary.json`: Offline dictionary database
 
 ### Permissions
 - `activeTab`: For accessing current page content
@@ -72,23 +71,11 @@ git clone [repository-url]
 2. Refresh the extension in `chrome://extensions/`
 3. Reload the target webpage
 
-### Adding Dictionary Entries
-Edit the `dictionary.json` file following the existing format:
-```json
-{
-  "word": {
-    "definition": "Word definition",
-    "part_of_speech": "word type",
-    "example": "Usage example"
-  }
-}
-```
-
 ## Future Enhancements
 - Support for additional languages
 - Customizable keyboard shortcuts
 - Extended dictionary database
-- Offline translation capabilities
+- Offline translation and definition capabilities
 - User-defined dictionary entries
 
 ## License

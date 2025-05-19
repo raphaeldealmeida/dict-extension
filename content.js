@@ -115,37 +115,45 @@ document.addEventListener("mouseup", async (event) => {
     const x = event.pageX;
     const y = event.pageY;
 
-    // Palavra única → definição offline
+    // Palavra única → definição via dictionaryapi.dev
     if (selection.split(" ").length === 1) {
         try {
-            const response = await fetch(chrome.runtime.getURL("dictionary.json"));
-            const dict = await response.json();
             const word = selection.toLowerCase();
-            if (dict[word]) {
-                const entry = dict[word];
-                const titleDiv = document.createElement('div');
-                titleDiv.style.display = 'flex';
-                titleDiv.style.alignItems = 'center';
-                titleDiv.style.gap = '5px';
-                titleDiv.style.marginBottom = '8px';
-                
-                const wordTitle = document.createElement('strong');
-                wordTitle.textContent = word;
-                titleDiv.appendChild(wordTitle);
-
-                const speaker = createSpeakerButton();
-                speaker.style.position = 'relative';
-                speaker.style.right = 'auto';
-                speaker.style.top = 'auto';
-                speaker.addEventListener('click', () => speakText(word, 'en-US'));
-                titleDiv.appendChild(speaker);
-
-                const text = `[${entry.part_of_speech}] ${entry.definition}\nExample: ${entry.example}`;
-                const tooltip = showTooltip(text, x, y, true);
-                tooltip.firstChild.insertBefore(titleDiv, tooltip.firstChild.firstChild);
-            } else {
+            const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
+            if (!response.ok) {
                 showTooltip(`Word "${selection}" not found in dictionary.`, x, y, true);
+                return;
             }
+            const data = await response.json();
+            // Pega a primeira definição e exemplo disponíveis
+            const entry = data[0];
+            const meaning = entry.meanings && entry.meanings[0];
+            const definitionObj = meaning && meaning.definitions && meaning.definitions[0];
+            const partOfSpeech = meaning ? meaning.partOfSpeech : '';
+            const definition = definitionObj ? definitionObj.definition : 'No definition found.';
+            const example = definitionObj && definitionObj.example ? definitionObj.example : '';
+
+            const titleDiv = document.createElement('div');
+            titleDiv.style.display = 'flex';
+            titleDiv.style.alignItems = 'center';
+            titleDiv.style.gap = '5px';
+            titleDiv.style.marginBottom = '8px';
+            
+            const wordTitle = document.createElement('strong');
+            wordTitle.textContent = word;
+            titleDiv.appendChild(wordTitle);
+
+            const speaker = createSpeakerButton();
+            speaker.style.position = 'relative';
+            speaker.style.right = 'auto';
+            speaker.style.top = 'auto';
+            speaker.addEventListener('click', () => speakText(word, 'en-US'));
+            titleDiv.appendChild(speaker);
+
+            let text = `[${partOfSpeech}] ${definition}`;
+            if (example) text += `\nExample: ${example}`;
+            const tooltip = showTooltip(text, x, y, true);
+            tooltip.firstChild.insertBefore(titleDiv, tooltip.firstChild.firstChild);
         } catch (err) {
             showTooltip("Error loading dictionary.", x, y, true);
         }
